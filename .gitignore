@@ -1,0 +1,7 @@
+*~
+app.js
+app.js.map
+bin/
+obj/
+*.v11.suo
+
