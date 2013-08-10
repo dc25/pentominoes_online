@@ -195,15 +195,10 @@ function renderScene(data) {
             // 3. Define the faces by setting the vertices indices
             var squareGeometry = new THREE.Geometry();
 
-            var element = row[i];
-            var coord_strings = element.split(",");
-            var x = parseInt(coord_strings[0]);
-            var y = parseInt(coord_strings[1]);
-
-            squareGeometry.vertices.push(new THREE.Vector3(x, y, 0.0));
-            squareGeometry.vertices.push(new THREE.Vector3(x + 1, y, 0.0));
-            squareGeometry.vertices.push(new THREE.Vector3(x + 1, y + 1, 0.0));
-            squareGeometry.vertices.push(new THREE.Vector3(x , y + 1, 0.0));
+            squareGeometry.vertices.push(new THREE.Vector3(0.0, 0.0, 0.0));
+            squareGeometry.vertices.push(new THREE.Vector3(1.0, 0.0, 0.0));
+            squareGeometry.vertices.push(new THREE.Vector3(1.0, 1.0, 0.0));
+            squareGeometry.vertices.push(new THREE.Vector3(0.0, 1.0, 0.0));
             squareGeometry.faces.push(new THREE.Face4(0,1,2,3));
 
             // Create a basic material and activate the 'doubleSided' attribute.
@@ -214,7 +209,12 @@ function renderScene(data) {
 
             // Create a mesh and insert the geometry and the material. 
             var squareMesh = new THREE.Mesh(squareGeometry, squareMaterial);
-            squareMesh.position.set(0.0, 0.0, 0.0);
+
+            var coord_strings = row[i].split(",");
+            var x = parseInt(coord_strings[0]);
+            var y = parseInt(coord_strings[1]);
+
+            squareMesh.position.set(x, y, 0.0);
             scene.add(squareMesh);
         }
     }
