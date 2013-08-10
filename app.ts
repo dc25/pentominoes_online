@@ -3,6 +3,148 @@
 
 declare var Detector: any;
 
+var availableColors = [
+"aqua",
+"blue",
+"blueviolet",
+"brown",
+"burlywood",
+"cadetblue",
+"chartreuse",
+"chocolate",
+"coral",
+"cornflowerblue",
+"crimson",
+"darkblue",
+"darkcyan",
+"darkgoldenrod",
+"darkgreen",
+"darkkhaki",
+"darkmagenta",
+"darkolivegreen",
+"darkorange",
+"darkorchid",
+"darkred",
+"darksalmon",
+"darkseagreen",
+"darkslateblue",
+"darkslategray",
+"darkturquoise",
+"darkviolet",
+"deeppink",
+"deepskyblue",
+"dimgray",
+"dodgerblue",
+"firebrick",
+"floralwhite",
+"forestgreen",
+"fuchsia",
+"gainsboro",
+"ghostwhite",
+"gold",
+"goldenrod",
+"gray",
+"green",
+"greenyellow",
+"honeydew",
+"hotpink",
+"indianred",
+"indigo",
+"ivory",
+"khaki",
+"lavender",
+"lavenderblush",
+"lawngreen",
+"lemonchiffon",
+"lightblue",
+"lightcoral",
+"lightcyan",
+"lightgoldenrodyellow",
+"lightgreen",
+"lightgrey",
+"lightpink",
+"lightsalmon",
+"lightseagreen",
+"lightskyblue",
+"lightslategray",
+"lightsteelblue",
+"lightyellow",
+"lime",
+"limegreen",
+"linen",
+"magenta",
+"maroon",
+"mediumaquamarine",
+"mediumblue",
+"mediumorchid",
+"mediumpurple",
+"mediumseagreen",
+"mediumslateblue",
+"mediumspringgreen",
+"mediumturquoise",
+"mediumvioletred",
+"midnightblue",
+"mintcream",
+"mistyrose",
+"moccasin",
+"navajowhite",
+"navy",
+"oldlace",
+"olive",
+"olivedrab",
+"orange",
+"orangered",
+"orchid",
+"palegoldenrod",
+"palegreen",
+"paleturquoise",
+"palevioletred",
+"papayawhip",
+"peachpuff",
+"peru",
+"pink",
+"plum",
+"powderblue",
+"purple",
+"red",
+"rosybrown",
+"royalblue",
+"saddlebrown",
+"salmon",
+"sandybrown",
+"seagreen",
+"seashell",
+"sienna",
+"silver",
+"skyblue",
+"slateblue",
+"slategray",
+"snow",
+"springgreen",
+"steelblue",
+"tan",
+"teal",
+"thistle",
+"tomato",
+"turquoise",
+"violet",
+"wheat",
+"white",
+"whitesmoke",
+"yellow",
+"yellowgreen"
+]
+
+var assignedColors = [];
+
+function getColor(label) {
+    if (!(label in assignedColors))
+    {
+        assignedColors[label] = availableColors.shift();
+    }
+    return assignedColors[label];
+}
+
 function renderScene(data) {
     var renderer;
     var scene;
@@ -38,16 +180,16 @@ function renderScene(data) {
     camera.lookAt(scene.position);
     scene.add(camera);
 
-    // 1. Instantiate the geometry object
-    // 2. Add the vertices
-    // 3. Define the faces by setting the vertices indices
-    var squareGeometry = new THREE.Geometry();
-
     var solutions = data.solutions;
     var firstSolution = solutions[0];
 
     for (var s = 0; s < firstSolution.length; s++)
     {
+        // 1. Instantiate the geometry object
+        // 2. Add the vertices
+        // 3. Define the faces by setting the vertices indices
+        var squareGeometry = new THREE.Geometry();
+
         var row = firstSolution[s];
         for (var i = 0; i < row.length - 1; i++)
         {
@@ -59,26 +201,26 @@ function renderScene(data) {
 
             var v_index = squareGeometry.vertices.length;
 
-            var border = 0.05;
+            var border = 0.00;
             squareGeometry.vertices.push(new THREE.Vector3(x + border, y + border, 0.0));
             squareGeometry.vertices.push(new THREE.Vector3(x + 1 - border, y + border, 0.0));
             squareGeometry.vertices.push(new THREE.Vector3(x + 1 - border, y + 1 - border, 0.0));
             squareGeometry.vertices.push(new THREE.Vector3(x + border, y + 1 - border, 0.0));
             squareGeometry.faces.push(new THREE.Face4(v_index, v_index + 1, v_index + 2, v_index + 3));
         }
+        var useColor = getColor(row[row.length - 1]);
+        // Create a white basic material and activate the 'doubleSided' attribute.
+        var squareMaterial = new THREE.MeshBasicMaterial({
+            color: useColor,
+            side: THREE.DoubleSide
+        });
+
+        // Create a mesh and insert the geometry and the material. Translate the whole mesh
+        // by 1.5 on the x axis and by 4 on the z axis and add the mesh to the scene.
+        var squareMesh = new THREE.Mesh(squareGeometry, squareMaterial);
+        squareMesh.position.set(0.0, 0.0, 0.0);
+        scene.add(squareMesh);
     }
-
-    // Create a white basic material and activate the 'doubleSided' attribute.
-    var squareMaterial = new THREE.MeshBasicMaterial({
-        color: 0xFFFFFF,
-        side: THREE.DoubleSide
-    });
-
-    // Create a mesh and insert the geometry and the material. Translate the whole mesh
-    // by 1.5 on the x axis and by 4 on the z axis and add the mesh to the scene.
-    var squareMesh = new THREE.Mesh(squareGeometry, squareMaterial);
-    squareMesh.position.set(0.0, 0.0, 0.0);
-    scene.add(squareMesh);
 
     /**
      * Render the scene. Map the 3D world to the 2D screen.
