@@ -1,5 +1,65 @@
 /// <reference path="jquery.d.ts" />
 /// <reference path="three.d.ts" />
+/// <reference path="tween.js.d.ts" />
+
+
+
+
+
+
+var position;
+var target;
+var tween;
+
+//init();
+//animate();
+
+function init() {
+
+    position = { x: 100, y: 100, rotation: 0 };
+    target = document.getElementById('target');
+    tween = new TWEEN.Tween(position)
+        .to({ x: 700, y: 200, rotation: 359 }, 2000)
+        .delay(1000)
+        .easing(TWEEN.Easing.Elastic.InOut)
+        .onUpdate(update);
+
+    tween.start();
+
+}
+
+function animate() {
+
+    requestAnimationFrame(animate);
+
+    TWEEN.update();
+
+}
+
+function update() {
+
+//    target.style.left = position.x + 'px';
+//    target.style.top = position.y + 'px';
+//    target.style.webkitTransform = 'rotate(' + Math.floor(position.rotation) + 'deg)';
+//    target.style.MozTransform = 'rotate(' + Math.floor(position.rotation) + 'deg)';
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 declare var Detector: any;
 
