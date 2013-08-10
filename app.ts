@@ -204,7 +204,6 @@ function renderScene(data) {
             // Create a basic material and activate the 'doubleSided' attribute.
             var squareMaterial = new THREE.MeshBasicMaterial({
                 color: useColor,
-                side: THREE.DoubleSide
             });
 
             // Create a mesh and insert the geometry and the material. 
