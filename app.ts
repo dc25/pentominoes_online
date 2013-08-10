@@ -1,6 +1,34 @@
 /// <reference path="jquery.d.ts" />
 /// <reference path="three.d.ts" />
 
+var solutions;
+var current_solution: number = 0;
+
+
+function cb() {
+    console.log("IN CB");
+}
+
+
+var solJson= $.ajax({
+    url: "solutions.json",
+    dataType: "json",
+    success: function (result) {
+        solutions = result;
+        console.log("token recieved: " + result.token);
+        cb();
+    },
+    error: function (request, textStatus, errorThrown) {
+        console.log(textStatus);
+        cb();
+    },
+    complete: function (request, textStatus) { //for additional info
+        console.log(request.responseText);
+        console.log(textStatus);
+        cb();
+    }
+});
+
 declare var Detector: any;
 
 var renderer;
