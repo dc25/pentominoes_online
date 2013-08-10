@@ -156,9 +156,6 @@ function renderScene(data) {
         renderer = new THREE.CanvasRenderer();
     }
 
-    // Set the background color of the renderer to black, with full opacity
-    renderer.setClearColor(0x000000, 1);
-
     // Get the size of the inner window (content area) to create a full size renderer
     var canvasWidth = window.innerWidth;
     var canvasHeight = window.innerHeight;
@@ -185,41 +182,38 @@ function renderScene(data) {
 
     for (var s = 0; s < firstSolution.length; s++)
     {
-        // 1. Instantiate the geometry object
-        // 2. Add the vertices
-        // 3. Define the faces by setting the vertices indices
-        var squareGeometry = new THREE.Geometry();
 
         var row = firstSolution[s];
+        var useColor = getColor(row[row.length - 1]);
         for (var i = 0; i < row.length - 1; i++)
         {
+            // 1. Instantiate the geometry object
+            // 2. Add the vertices
+            // 3. Define the faces by setting the vertices indices
+            var squareGeometry = new THREE.Geometry();
 
             var element = row[i];
             var coord_strings = element.split(",");
             var x = parseInt(coord_strings[0]);
             var y = parseInt(coord_strings[1]);
 
-            var v_index = squareGeometry.vertices.length;
+            squareGeometry.vertices.push(new THREE.Vector3(x, y, 0.0));
+            squareGeometry.vertices.push(new THREE.Vector3(x + 1, y, 0.0));
+            squareGeometry.vertices.push(new THREE.Vector3(x + 1, y + 1, 0.0));
+            squareGeometry.vertices.push(new THREE.Vector3(x, y + 1, 0.0));
+            squareGeometry.faces.push(new THREE.Face4(0,1,2,3));
 
-            var border = 0.00;
-            squareGeometry.vertices.push(new THREE.Vector3(x + border, y + border, 0.0));
-            squareGeometry.vertices.push(new THREE.Vector3(x + 1 - border, y + border, 0.0));
-            squareGeometry.vertices.push(new THREE.Vector3(x + 1 - border, y + 1 - border, 0.0));
-            squareGeometry.vertices.push(new THREE.Vector3(x + border, y + 1 - border, 0.0));
-            squareGeometry.faces.push(new THREE.Face4(v_index, v_index + 1, v_index + 2, v_index + 3));
+            // Create a basic material and activate the 'doubleSided' attribute.
+            var squareMaterial = new THREE.MeshBasicMaterial({
+                color: useColor,
+                side: THREE.DoubleSide
+            });
+
+            // Create a mesh and insert the geometry and the material. 
+            var squareMesh = new THREE.Mesh(squareGeometry, squareMaterial);
+            squareMesh.position.set(0.0, 0.0, 0.0);
+            scene.add(squareMesh);
         }
-        var useColor = getColor(row[row.length - 1]);
-        // Create a white basic material and activate the 'doubleSided' attribute.
-        var squareMaterial = new THREE.MeshBasicMaterial({
-            color: useColor,
-            side: THREE.DoubleSide
-        });
-
-        // Create a mesh and insert the geometry and the material. Translate the whole mesh
-        // by 1.5 on the x axis and by 4 on the z axis and add the mesh to the scene.
-        var squareMesh = new THREE.Mesh(squareGeometry, squareMaterial);
-        squareMesh.position.set(0.0, 0.0, 0.0);
-        scene.add(squareMesh);
     }
 
     /**
