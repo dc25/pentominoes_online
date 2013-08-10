@@ -156,6 +156,9 @@ function renderScene(data) {
         renderer = new THREE.CanvasRenderer();
     }
 
+    // Set the background color of the renderer to black, with full opacity
+    renderer.setClearColor(0x000000, 1);
+
     // Get the size of the inner window (content area) to create a full size renderer
     var canvasWidth = window.innerWidth;
     var canvasHeight = window.innerHeight;
@@ -173,7 +176,7 @@ function renderScene(data) {
 
     // After definition, the camera has to be added to the scene.
     camera = new THREE.PerspectiveCamera(45, canvasWidth / canvasHeight, 1, 100);
-    camera.position.set(0, 0, 30);
+    camera.position.set(0, 0, 20);
     camera.lookAt(scene.position);
     scene.add(camera);
 
@@ -200,7 +203,7 @@ function renderScene(data) {
             squareGeometry.vertices.push(new THREE.Vector3(x, y, 0.0));
             squareGeometry.vertices.push(new THREE.Vector3(x + 1, y, 0.0));
             squareGeometry.vertices.push(new THREE.Vector3(x + 1, y + 1, 0.0));
-            squareGeometry.vertices.push(new THREE.Vector3(x, y + 1, 0.0));
+            squareGeometry.vertices.push(new THREE.Vector3(x , y + 1, 0.0));
             squareGeometry.faces.push(new THREE.Face4(0,1,2,3));
 
             // Create a basic material and activate the 'doubleSided' attribute.
