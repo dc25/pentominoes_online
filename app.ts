@@ -7,14 +7,11 @@ var puzzleScene: PuzzleScene;
 var position;
 var tween;
 
-//init();
-//animate();
-
 function initTween() {
 
     position = {rotation: 0 };
     tween = new TWEEN.Tween(position)
-        .to({ rotation: 359 }, 20000)
+        .to({ rotation: 360 }, 4000)
         .easing(TWEEN.Easing.Elastic.InOut)
         .start();
 }
@@ -25,19 +22,6 @@ function animate() {
     puzzleScene.update();
     puzzleScene.renderScene();
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 declare var Detector: any;
 
@@ -183,45 +167,45 @@ function getColor(label) {
     return assignedColors[label];
 }
 
-var renderer;
-var scene;
-var camera;
-
 class PuzzleScene {
+
+    private renderer;
+    private scene;
+    private camera;
 
     private meshes: { [element: string]: THREE.Mesh; } = {};
 
     public initializeScene(data) {
 
         if (Detector.webgl) {
-            renderer = new THREE.WebGLRenderer({ antialias: true });
+            this.renderer = new THREE.WebGLRenderer({ antialias: true });
         } else {
-            renderer = new THREE.CanvasRenderer();
+            this.renderer = new THREE.CanvasRenderer();
         }
 
         // Set the background color of the renderer to black, with full opacity
-        renderer.setClearColor(0x000000, 1);
+        this.renderer.setClearColor(0x000000, 1);
 
         // Get the size of the inner window (content area) to create a full size renderer
         var canvasWidth = window.innerWidth;
         var canvasHeight = window.innerHeight;
 
         // Set the renderers size to the content areas size
-        renderer.setSize(canvasWidth, canvasHeight);
+        this.renderer.setSize(canvasWidth, canvasHeight);
 
         // Get the DIV element from the HTML document by its ID and 
         // append the renderers DOM object to it
-        document.getElementById("WebGLCanvas").appendChild(renderer.domElement);
+        document.getElementById("WebGLCanvas").appendChild(this.renderer.domElement);
 
         // Create the scene, in which all objects are stored (e. g. camera, 
         // lights, geometries, ...)
-        scene = new THREE.Scene();
+        this.scene = new THREE.Scene();
 
         // After definition, the camera has to be added to the scene.
-        camera = new THREE.PerspectiveCamera(45, canvasWidth / canvasHeight, 1, 100);
-        camera.position.set(0, 0, 20);
-        camera.lookAt(scene.position);
-        scene.add(camera);
+        this.camera = new THREE.PerspectiveCamera(45, canvasWidth / canvasHeight, 1, 100);
+        this.camera.position.set(0, 0, 20);
+        this.camera.lookAt(this.scene.position);
+        this.scene.add(this.camera);
 
         var solutions = data.solutions;
         var firstSolution = solutions[0];
@@ -260,7 +244,7 @@ class PuzzleScene {
                 var y = parseInt(coord_strings[1]);
 
                 squareMesh.position.set(x, y, 0.0);
-                scene.add(squareMesh);
+                this.scene.add(squareMesh);
             }
         }
     }
@@ -274,11 +258,10 @@ class PuzzleScene {
 
 
     public renderScene() {
-        renderer.render(scene, camera);
+        this.renderer.render(this.scene, this.camera);
     }
     
 }
-
 
 function showSolutions() {
     $.getJSON('solutions.json', function (data) {
