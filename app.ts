@@ -2,51 +2,29 @@
 /// <reference path="three.d.ts" />
 /// <reference path="tween.js.d.ts" />
 
-
-
-
-
+var puzzleScene: PuzzleScene;
 
 var position;
-var target;
 var tween;
 
 //init();
 //animate();
 
-function init() {
+function initTween() {
 
-    position = { x: 100, y: 100, rotation: 0 };
-    target = document.getElementById('target');
+    position = {rotation: 0 };
     tween = new TWEEN.Tween(position)
-        .to({ x: 700, y: 200, rotation: 359 }, 2000)
-        .delay(1000)
+        .to({ rotation: 359 }, 20000)
         .easing(TWEEN.Easing.Elastic.InOut)
-        .onUpdate(update);
-
-    tween.start();
-
+        .start();
 }
 
 function animate() {
-
     requestAnimationFrame(animate);
-
     TWEEN.update();
-
+    puzzleScene.update();
+    puzzleScene.renderScene();
 }
-
-function update() {
-
-//    target.style.left = position.x + 'px';
-//    target.style.top = position.y + 'px';
-//    target.style.webkitTransform = 'rotate(' + Math.floor(position.rotation) + 'deg)';
-//    target.style.MozTransform = 'rotate(' + Math.floor(position.rotation) + 'deg)';
-
-}
-
-
-
 
 
 
@@ -205,88 +183,109 @@ function getColor(label) {
     return assignedColors[label];
 }
 
-function renderScene(data) {
-    var renderer;
-    var scene;
-    var camera;
+var renderer;
+var scene;
+var camera;
 
-    if (Detector.webgl) {
-        renderer = new THREE.WebGLRenderer({ antialias: true });
-    } else {
-        renderer = new THREE.CanvasRenderer();
-    }
+class PuzzleScene {
 
-    // Set the background color of the renderer to black, with full opacity
-    renderer.setClearColor(0x000000, 1);
+    private meshes: { [element: string]: THREE.Mesh; } = {};
 
-    // Get the size of the inner window (content area) to create a full size renderer
-    var canvasWidth = window.innerWidth;
-    var canvasHeight = window.innerHeight;
+    public initializeScene(data) {
 
-    // Set the renderers size to the content areas size
-    renderer.setSize(canvasWidth, canvasHeight);
+        if (Detector.webgl) {
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+        } else {
+            renderer = new THREE.CanvasRenderer();
+        }
 
-    // Get the DIV element from the HTML document by its ID and 
-    // append the renderers DOM object to it
-    document.getElementById("WebGLCanvas").appendChild(renderer.domElement);
+        // Set the background color of the renderer to black, with full opacity
+        renderer.setClearColor(0x000000, 1);
 
-    // Create the scene, in which all objects are stored (e. g. camera, 
-    // lights, geometries, ...)
-    scene = new THREE.Scene();
+        // Get the size of the inner window (content area) to create a full size renderer
+        var canvasWidth = window.innerWidth;
+        var canvasHeight = window.innerHeight;
 
-    // After definition, the camera has to be added to the scene.
-    camera = new THREE.PerspectiveCamera(45, canvasWidth / canvasHeight, 1, 100);
-    camera.position.set(0, 0, 20);
-    camera.lookAt(scene.position);
-    scene.add(camera);
+        // Set the renderers size to the content areas size
+        renderer.setSize(canvasWidth, canvasHeight);
 
-    var solutions = data.solutions;
-    var firstSolution = solutions[0];
+        // Get the DIV element from the HTML document by its ID and 
+        // append the renderers DOM object to it
+        document.getElementById("WebGLCanvas").appendChild(renderer.domElement);
 
-    for (var s = 0; s < firstSolution.length; s++)
-    {
+        // Create the scene, in which all objects are stored (e. g. camera, 
+        // lights, geometries, ...)
+        scene = new THREE.Scene();
 
-        var row = firstSolution[s];
-        var useColor = getColor(row[row.length - 1]);
-        for (var i = 0; i < row.length - 1; i++)
+        // After definition, the camera has to be added to the scene.
+        camera = new THREE.PerspectiveCamera(45, canvasWidth / canvasHeight, 1, 100);
+        camera.position.set(0, 0, 20);
+        camera.lookAt(scene.position);
+        scene.add(camera);
+
+        var solutions = data.solutions;
+        var firstSolution = solutions[0];
+
+        for (var s = 0; s < firstSolution.length; s++)
         {
-            // 1. Instantiate the geometry object
-            // 2. Add the vertices
-            // 3. Define the faces by setting the vertices indices
-            var squareGeometry = new THREE.Geometry();
 
-            squareGeometry.vertices.push(new THREE.Vector3(0.0, 0.0, 0.0));
-            squareGeometry.vertices.push(new THREE.Vector3(1.0, 0.0, 0.0));
-            squareGeometry.vertices.push(new THREE.Vector3(1.0, 1.0, 0.0));
-            squareGeometry.vertices.push(new THREE.Vector3(0.0, 1.0, 0.0));
-            squareGeometry.faces.push(new THREE.Face4(0,1,2,3));
+            var row = firstSolution[s];
+            var useColor = getColor(row[row.length - 1]);
+            for (var i = 0; i < row.length - 1; i++)
+            {
+                // 1. Instantiate the geometry object
+                // 2. Add the vertices
+                // 3. Define the faces by setting the vertices indices
+                var squareGeometry = new THREE.Geometry();
 
-            // Create a basic material and activate the 'doubleSided' attribute.
-            var squareMaterial = new THREE.MeshBasicMaterial({
-                color: useColor,
-            });
+                squareGeometry.vertices.push(new THREE.Vector3(0.0, 0.0, 0.0));
+                squareGeometry.vertices.push(new THREE.Vector3(1.0, 0.0, 0.0));
+                squareGeometry.vertices.push(new THREE.Vector3(1.0, 1.0, 0.0));
+                squareGeometry.vertices.push(new THREE.Vector3(0.0, 1.0, 0.0));
+                squareGeometry.faces.push(new THREE.Face4(0, 1, 2, 3));
 
-            // Create a mesh and insert the geometry and the material. 
-            var squareMesh = new THREE.Mesh(squareGeometry, squareMaterial);
+                // Create a basic material and activate the 'doubleSided' attribute.
+                var squareMaterial = new THREE.MeshBasicMaterial({
+                    color: useColor,
+                });
 
-            var coord_strings = row[i].split(",");
-            var x = parseInt(coord_strings[0]);
-            var y = parseInt(coord_strings[1]);
+                // Create a mesh and insert the geometry and the material. 
+                var squareMesh = new THREE.Mesh(squareGeometry, squareMaterial);
 
-            squareMesh.position.set(x, y, 0.0);
-            scene.add(squareMesh);
+                // save for later animation
+                this.meshes[row[i]] = squareMesh;
+
+                var coord_strings = row[i].split(",");
+                var x = parseInt(coord_strings[0]);
+                var y = parseInt(coord_strings[1]);
+
+                squareMesh.position.set(x, y, 0.0);
+                scene.add(squareMesh);
+            }
         }
     }
 
-    /**
-     * Render the scene. Map the 3D world to the 2D screen.
-     */
-    renderer.render(scene, camera);
+
+    public update() {
+        $.each(this.meshes, function (key, value) {
+            value.rotation.y = position.rotation/180 * Math.PI;
+        });
+    }
+
+
+    public renderScene() {
+        renderer.render(scene, camera);
+    }
+    
 }
+
 
 function showSolutions() {
     $.getJSON('solutions.json', function (data) {
-        renderScene(data);
+        puzzleScene = new PuzzleScene;
+        puzzleScene.initializeScene(data);
+        initTween();
+        animate();
     });
 }
 
