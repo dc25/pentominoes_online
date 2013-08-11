@@ -18,12 +18,12 @@ function initTween() {
     position = {rotation: 0 };
     tween = new TWEEN.Tween(position)
         .to({ rotation: 180 }, rotateTime)
-        .easing(TWEEN.Easing.Linear.None)
+        .easing(TWEEN.Easing.Back.InOut)
         .onComplete(function () { puzzleScene.loadNextSolution() });
 
     backtween = new TWEEN.Tween(position)
         .to({ rotation: 0 }, rotateTime)
-        .easing(TWEEN.Easing.Linear.None)
+        .easing(TWEEN.Easing.Back.InOut)
         .onComplete(function () { puzzleScene.loadNextSolution() });
 
     pausetween0 = new TWEEN.Tween({})
@@ -205,8 +205,6 @@ class PuzzleScene {
 
     private meshes: { [element: string]: THREE.Mesh; }[] = [];
 
-
-
     private colorMesh(mesh, solution): void {
         for (var s = 0; s < solution.length; s++)
         {
@@ -221,7 +219,6 @@ class PuzzleScene {
         }
     }
 
-
     private initSolutionMeshes(solution, meshIndex: number): void {
         for (var s = 0; s < solution.length; s++)
         {
@@ -235,10 +232,11 @@ class PuzzleScene {
                 // 3. Define the faces by setting the vertices indices
                 var squareGeometry = new THREE.Geometry();
 
-                squareGeometry.vertices.push(new THREE.Vector3(0.0, 0.0, 0.0));
-                squareGeometry.vertices.push(new THREE.Vector3(1.0, 0.0, 0.0));
-                squareGeometry.vertices.push(new THREE.Vector3(1.0, 1.0, 0.0));
-                squareGeometry.vertices.push(new THREE.Vector3(0.0, 1.0, 0.0));
+                var border: number = 0.02;
+                squareGeometry.vertices.push(new THREE.Vector3(0.0 + border, 0.0 + border, 0.0));
+                squareGeometry.vertices.push(new THREE.Vector3(1.0 - border, 0.0 + border, 0.0));
+                squareGeometry.vertices.push(new THREE.Vector3(1.0 - border, 1.0 - border, 0.0));
+                squareGeometry.vertices.push(new THREE.Vector3(0.0 + border, 1.0 - border, 0.0));
                 if (meshIndex == 0) {
                     squareGeometry.faces.push(new THREE.Face4(0, 1, 2, 3));
                 } else {
