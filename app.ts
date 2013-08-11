@@ -6,14 +6,40 @@ var puzzleScene: PuzzleScene;
 
 var position;
 var tween;
+var backtween;
+var pausetween0;
+var pausetween1;
 
 function initTween() {
 
+    var rotateTime: number = 3000;
+    var pauseTime: number = 2000;
+
     position = {rotation: 0 };
     tween = new TWEEN.Tween(position)
-        .to({ rotation: 180 }, 4000)
+        .to({ rotation: 180 }, rotateTime)
         .easing(TWEEN.Easing.Linear.None)
-        .start();
+        .onComplete(function () { puzzleScene.loadNextSolution() });
+
+    backtween = new TWEEN.Tween(position)
+        .to({ rotation: 0 }, rotateTime)
+        .easing(TWEEN.Easing.Linear.None)
+        .onComplete(function () { puzzleScene.loadNextSolution() });
+
+    pausetween0 = new TWEEN.Tween({})
+        .to({}, pauseTime)
+        .easing(TWEEN.Easing.Linear.None);
+
+    pausetween1 = new TWEEN.Tween({})
+        .to({}, pauseTime)
+        .easing(TWEEN.Easing.Linear.None);
+
+    tween.chain(pausetween0);
+    pausetween0.chain(backtween);
+    backtween.chain(pausetween1);
+    pausetween1.chain(tween);
+
+    tween.start();
 }
 
 function animate() {
@@ -173,7 +199,27 @@ class PuzzleScene {
     private scene;
     private camera;
 
+    private backMeshIndex: number;
+    private backSolutionIndex: number;
+    private solutions;
+
     private meshes: { [element: string]: THREE.Mesh; }[] = [];
+
+
+
+    private colorMesh(mesh, solution): void {
+        for (var s = 0; s < solution.length; s++)
+        {
+
+            var row = solution[s];
+            var useColor = getColor(row[row.length - 1]);
+            for (var i = 0; i < row.length - 1; i++)
+            {
+                var squareMesh = mesh[row[i]];
+                squareMesh.material.color.set(useColor);
+            }
+        }
+    }
 
 
     private initSolutionMeshes(solution, meshIndex: number): void {
@@ -217,6 +263,8 @@ class PuzzleScene {
 
     public initializeScene(data) {
 
+        this.solutions = data.solutions
+
         this.meshes[0] = {};
         this.meshes[1] = {};
 
@@ -246,14 +294,15 @@ class PuzzleScene {
 
         // After definition, the camera has to be added to the scene.
         this.camera = new THREE.PerspectiveCamera(45, canvasWidth / canvasHeight, 1, 100);
-        this.camera.position.set(0, 0, 20);
+        this.camera.position.set(0, 0, 10);
         this.camera.lookAt(this.scene.position);
         this.scene.add(this.camera);
 
-        var solutions = data.solutions;
+        this.initSolutionMeshes(this.solutions[0], 0);
+        this.initSolutionMeshes(this.solutions[1], 1);
 
-        this.initSolutionMeshes(solutions[0], 0);
-        this.initSolutionMeshes(solutions[1], 1);
+        this.backSolutionIndex = 1;
+        this.backMeshIndex = 1;
 
     }
 
@@ -262,7 +311,7 @@ class PuzzleScene {
             var coord_strings = key.split(",");
             var x = parseInt(coord_strings[0]);
             var y = parseInt(coord_strings[1]);
-            var position = new THREE.Vector3(x, y, 0.0);
+            var position = new THREE.Vector3(x-5, y-3, 0.0);
 
             value.matrix.copy(rotationMatrix);
             value.matrix.setPosition(position);
@@ -279,6 +328,20 @@ class PuzzleScene {
         this.rotateMeshes(rotationMatrix, 1);
     }
 
+
+    public loadNextSolution(): void {
+        this.backMeshIndex += 1;
+        if (this.backMeshIndex == this.meshes.length) {
+            this.backMeshIndex = 0;
+        }
+
+        this.backSolutionIndex += 1;
+        if (this.backSolutionIndex == this.solutions.length) {
+            this.backSolutionIndex = 0;
+        }
+
+        this.colorMesh(this.meshes[this.backMeshIndex], this.solutions[this.backSolutionIndex]);
+    }
 
     public renderScene() {
         this.renderer.render(this.scene, this.camera);
