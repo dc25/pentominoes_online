@@ -11,8 +11,8 @@ function initTween() {
 
     position = {rotation: 0 };
     tween = new TWEEN.Tween(position)
-        .to({ rotation: 360 }, 4000)
-        .easing(TWEEN.Easing.Elastic.InOut)
+        .to({ rotation: 180 }, 4000)
+        .easing(TWEEN.Easing.Linear.None)
         .start();
 }
 
@@ -173,9 +173,52 @@ class PuzzleScene {
     private scene;
     private camera;
 
-    private meshes: { [element: string]: THREE.Mesh; } = {};
+    private meshes: { [element: string]: THREE.Mesh; }[] = [];
+
+
+    private initSolutionMeshes(solution, meshIndex: number): void {
+        for (var s = 0; s < solution.length; s++)
+        {
+
+            var row = solution[s];
+            var useColor = getColor(row[row.length - 1]);
+            for (var i = 0; i < row.length - 1; i++)
+            {
+                // 1. Instantiate the geometry object
+                // 2. Add the vertices
+                // 3. Define the faces by setting the vertices indices
+                var squareGeometry = new THREE.Geometry();
+
+                squareGeometry.vertices.push(new THREE.Vector3(0.0, 0.0, 0.0));
+                squareGeometry.vertices.push(new THREE.Vector3(1.0, 0.0, 0.0));
+                squareGeometry.vertices.push(new THREE.Vector3(1.0, 1.0, 0.0));
+                squareGeometry.vertices.push(new THREE.Vector3(0.0, 1.0, 0.0));
+                if (meshIndex == 0) {
+                    squareGeometry.faces.push(new THREE.Face4(0, 1, 2, 3));
+                } else {
+                    squareGeometry.faces.push(new THREE.Face4(3, 2, 1, 0));
+                }
+
+                // Create a basic material and activate the 'doubleSided' attribute.
+                var squareMaterial = new THREE.MeshBasicMaterial({
+                    color: useColor,
+                });
+
+                // Create a mesh and insert the geometry and the material. 
+                var squareMesh = new THREE.Mesh(squareGeometry, squareMaterial);
+
+                // save for later animation
+                this.meshes[meshIndex][row[i]] = squareMesh;
+                squareMesh.matrixAutoUpdate = false;
+                this.scene.add(squareMesh);
+            }
+        }
+    }
 
     public initializeScene(data) {
+
+        this.meshes[0] = {};
+        this.meshes[1] = {};
 
         if (Detector.webgl) {
             this.renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -208,52 +251,32 @@ class PuzzleScene {
         this.scene.add(this.camera);
 
         var solutions = data.solutions;
-        var firstSolution = solutions[0];
 
-        for (var s = 0; s < firstSolution.length; s++)
-        {
+        this.initSolutionMeshes(solutions[0], 0);
+        this.initSolutionMeshes(solutions[1], 1);
 
-            var row = firstSolution[s];
-            var useColor = getColor(row[row.length - 1]);
-            for (var i = 0; i < row.length - 1; i++)
-            {
-                // 1. Instantiate the geometry object
-                // 2. Add the vertices
-                // 3. Define the faces by setting the vertices indices
-                var squareGeometry = new THREE.Geometry();
-
-                squareGeometry.vertices.push(new THREE.Vector3(0.0, 0.0, 0.0));
-                squareGeometry.vertices.push(new THREE.Vector3(1.0, 0.0, 0.0));
-                squareGeometry.vertices.push(new THREE.Vector3(1.0, 1.0, 0.0));
-                squareGeometry.vertices.push(new THREE.Vector3(0.0, 1.0, 0.0));
-                squareGeometry.faces.push(new THREE.Face4(0, 1, 2, 3));
-
-                // Create a basic material and activate the 'doubleSided' attribute.
-                var squareMaterial = new THREE.MeshBasicMaterial({
-                    color: useColor,
-                });
-
-                // Create a mesh and insert the geometry and the material. 
-                var squareMesh = new THREE.Mesh(squareGeometry, squareMaterial);
-
-                // save for later animation
-                this.meshes[row[i]] = squareMesh;
-
-                var coord_strings = row[i].split(",");
-                var x = parseInt(coord_strings[0]);
-                var y = parseInt(coord_strings[1]);
-
-                squareMesh.position.set(x, y, 0.0);
-                this.scene.add(squareMesh);
-            }
-        }
     }
 
+    private rotateMeshes(rotationMatrix: THREE.Matrix4, meshIndex: number): void {
+        $.each(this.meshes[meshIndex], function (key, value) {
+            var coord_strings = key.split(",");
+            var x = parseInt(coord_strings[0]);
+            var y = parseInt(coord_strings[1]);
+            var position = new THREE.Vector3(x, y, 0.0);
+
+            value.matrix.copy(rotationMatrix);
+            value.matrix.setPosition(position);
+            value.updateMatrixWorld(true);  // why is this necessary?
+        });
+    }
 
     public update() {
-        $.each(this.meshes, function (key, value) {
-            value.rotation.y = position.rotation/180 * Math.PI;
-        });
+        var rotationAxis = new THREE.Vector3(1.0, 1.0, 0.0);
+        rotationAxis.normalize();
+        var rotationMatrix: THREE.Matrix4 = new THREE.Matrix4;
+        rotationMatrix.makeRotationAxis(rotationAxis, position.rotation / 180.0 * Math.PI);
+        this.rotateMeshes(rotationMatrix, 0);
+        this.rotateMeshes(rotationMatrix, 1);
     }
 
 
