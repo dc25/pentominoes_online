@@ -34,12 +34,12 @@ function initTween() {
         .to({}, pauseTime)
         .easing(TWEEN.Easing.Linear.None);
 
-    tween.chain(pausetween0);
-    pausetween0.chain(backtween);
-    backtween.chain(pausetween1);
-    pausetween1.chain(tween);
+    pausetween0.chain(tween);
+    tween.chain(pausetween1);
+    pausetween1.chain(backtween);
+    backtween.chain(pausetween0);
 
-    tween.start();
+    pausetween0.start();
 }
 
 function animate() {
@@ -203,21 +203,7 @@ class PuzzleScene {
     private backSolutionIndex: number;
     private solutions;
 
-    private meshes: { [element: string]: THREE.Mesh; }[] = [];
-
-    private colorMesh(mesh, solution): void {
-        for (var s = 0; s < solution.length; s++)
-        {
-
-            var row = solution[s];
-            var useColor = getColor(row[row.length - 1]);
-            for (var i = 0; i < row.length - 1; i++)
-            {
-                var squareMesh = mesh[row[i]];
-                squareMesh.material.color.set(useColor);
-            }
-        }
-    }
+    private meshes: { [element: string]: THREE.Mesh; }[];
 
     private initSolutionMeshes(solution, meshIndex: number): void {
         for (var s = 0; s < solution.length; s++)
@@ -243,7 +229,7 @@ class PuzzleScene {
                     squareGeometry.faces.push(new THREE.Face4(3, 2, 1, 0));
                 }
 
-                // Create a basic material and activate the 'doubleSided' attribute.
+                // Create a basic material
                 var squareMaterial = new THREE.MeshBasicMaterial({
                     color: useColor,
                 });
@@ -262,7 +248,8 @@ class PuzzleScene {
     public initializeScene(data) {
 
         this.solutions = data.solutions
-
+        
+        this.meshes = [];
         this.meshes[0] = {};
         this.meshes[1] = {};
 
@@ -304,44 +291,46 @@ class PuzzleScene {
 
     }
 
-    private rotateMeshes(rotationMatrix: THREE.Matrix4, meshIndex: number): void {
-        $.each(this.meshes[meshIndex], function (key, value) {
-            var coord_strings = key.split(",");
-            var x = parseInt(coord_strings[0]);
-            var y = parseInt(coord_strings[1]);
-            var position = new THREE.Vector3(x-5, y-3, 0.0);
+    public update(): void {
+        $.each(this.meshes, function (key, mesh) {
+            var rotationAxis = new THREE.Vector3(1.0, 1.0, 0.0);
+            rotationAxis.normalize();
+            var rotationMatrix: THREE.Matrix4 = new THREE.Matrix4;
+            rotationMatrix.makeRotationAxis(rotationAxis, position.rotation / 180.0 * Math.PI);
+            $.each(mesh, function (key, square) {
+                var coord_strings = key.split(",");
+                var x = parseInt(coord_strings[0]);
+                var y = parseInt(coord_strings[1]);
+                var position = new THREE.Vector3(x - 5, y - 3, 0.0);
 
-            value.matrix.copy(rotationMatrix);
-            value.matrix.setPosition(position);
-            value.updateMatrixWorld(true);  // why is this necessary?
+                square.matrix.copy(rotationMatrix);
+                square.matrix.setPosition(position);
+                square.updateMatrixWorld(true);  // why is this necessary?
+            });
         });
     }
 
-    public update() {
-        var rotationAxis = new THREE.Vector3(1.0, 1.0, 0.0);
-        rotationAxis.normalize();
-        var rotationMatrix: THREE.Matrix4 = new THREE.Matrix4;
-        rotationMatrix.makeRotationAxis(rotationAxis, position.rotation / 180.0 * Math.PI);
-        this.rotateMeshes(rotationMatrix, 0);
-        this.rotateMeshes(rotationMatrix, 1);
-    }
-
-
     public loadNextSolution(): void {
-        this.backMeshIndex += 1;
-        if (this.backMeshIndex == this.meshes.length) {
-            this.backMeshIndex = 0;
-        }
+        this.backMeshIndex = (this.backMeshIndex + 1) % 2;
+        this.backSolutionIndex = (this.backSolutionIndex + 1) % this.solutions.length;
 
-        this.backSolutionIndex += 1;
-        if (this.backSolutionIndex == this.solutions.length) {
-            this.backSolutionIndex = 0;
-        }
+        var mesh = this.meshes[this.backMeshIndex];
+        var solution = this.solutions[this.backSolutionIndex];
 
-        this.colorMesh(this.meshes[this.backMeshIndex], this.solutions[this.backSolutionIndex]);
+        for (var s = 0; s < solution.length; s++)
+        {
+
+            var row = solution[s];
+            var useColor = getColor(row[row.length - 1]);
+            for (var i = 0; i < row.length - 1; i++)
+            {
+                var material = <THREE.MeshBasicMaterial>mesh[row[i]].material;
+                material.color.set(useColor);
+            }
+        }
     }
 
-    public renderScene() {
+    public renderScene():void {
         this.renderer.render(this.scene, this.camera);
     }
     
