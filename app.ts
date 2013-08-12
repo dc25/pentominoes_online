@@ -205,12 +205,26 @@ class PuzzleScene {
 
     private meshes: { [element: string]: THREE.Mesh; }[];
 
+    private colorMesh(mesh, solution):void {
+        for (var s = 0; s < solution.length; s++)
+        {
+            var row = solution[s];
+            var useColor = getColor(row[row.length - 1]);
+            for (var i = 0; i < row.length - 1; i++)
+            {
+                var material = <THREE.MeshBasicMaterial>mesh[row[i]].material;
+                material.color.set(useColor);
+            }
+        }
+    }
+
     private initSolutionMeshes(solution, meshIndex: number): void {
+        var mesh = this.meshes[meshIndex];
         for (var s = 0; s < solution.length; s++)
         {
 
             var row = solution[s];
-            var useColor = getColor(row[row.length - 1]);
+            //var useColor = getColor(row[row.length - 1]);
             for (var i = 0; i < row.length - 1; i++)
             {
                 // 1. Instantiate the geometry object
@@ -229,20 +243,16 @@ class PuzzleScene {
                     squareGeometry.faces.push(new THREE.Face4(3, 2, 1, 0));
                 }
 
-                // Create a basic material
-                var squareMaterial = new THREE.MeshBasicMaterial({
-                    color: useColor,
-                });
-
                 // Create a mesh and insert the geometry and the material. 
-                var squareMesh = new THREE.Mesh(squareGeometry, squareMaterial);
+                var squareMesh = new THREE.Mesh(squareGeometry);
 
                 // save for later animation
-                this.meshes[meshIndex][row[i]] = squareMesh;
+                mesh[row[i]] = squareMesh;
                 squareMesh.matrixAutoUpdate = false;
                 this.scene.add(squareMesh);
             }
         }
+        this.colorMesh(mesh, solution);
     }
 
     public initializeScene(data) {
@@ -292,11 +302,11 @@ class PuzzleScene {
     }
 
     public update(): void {
+        var rotationAxis = new THREE.Vector3(1.0, 1.0, 0.0);
+        rotationAxis.normalize();
+        var rotationMatrix: THREE.Matrix4 = new THREE.Matrix4;
+        rotationMatrix.makeRotationAxis(rotationAxis, position.rotation / 180.0 * Math.PI);
         $.each(this.meshes, function (key, mesh) {
-            var rotationAxis = new THREE.Vector3(1.0, 1.0, 0.0);
-            rotationAxis.normalize();
-            var rotationMatrix: THREE.Matrix4 = new THREE.Matrix4;
-            rotationMatrix.makeRotationAxis(rotationAxis, position.rotation / 180.0 * Math.PI);
             $.each(mesh, function (key, square) {
                 var coord_strings = key.split(",");
                 var x = parseInt(coord_strings[0]);
@@ -316,18 +326,7 @@ class PuzzleScene {
 
         var mesh = this.meshes[this.backMeshIndex];
         var solution = this.solutions[this.backSolutionIndex];
-
-        for (var s = 0; s < solution.length; s++)
-        {
-
-            var row = solution[s];
-            var useColor = getColor(row[row.length - 1]);
-            for (var i = 0; i < row.length - 1; i++)
-            {
-                var material = <THREE.MeshBasicMaterial>mesh[row[i]].material;
-                material.color.set(useColor);
-            }
-        }
+        this.colorMesh(mesh, solution);
     }
 
     public renderScene():void {
