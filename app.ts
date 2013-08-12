@@ -27,12 +27,10 @@ function initTween() {
         .onComplete(function () { puzzleScene.loadNextSolution() });
 
     pausetween0 = new TWEEN.Tween({})
-        .to({}, pauseTime)
-        .easing(TWEEN.Easing.Linear.None);
+        .to({}, pauseTime);
 
     pausetween1 = new TWEEN.Tween({})
-        .to({}, pauseTime)
-        .easing(TWEEN.Easing.Linear.None);
+        .to({}, pauseTime);
 
     pausetween0.chain(tween);
     tween.chain(pausetween1);
@@ -104,9 +102,7 @@ class PuzzleScene {
         var mesh = this.meshes[meshIndex];
         for (var s = 0; s < solution.length; s++)
         {
-
             var row = solution[s];
-            //var useColor = getColor(row[row.length - 1]);
             for (var i = 0; i < row.length - 1; i++)
             {
                 // 1. Instantiate the geometry object
