@@ -84,6 +84,8 @@ class PuzzleScene {
     private solutions;
 
     private meshes: { [element: string]: THREE.Mesh; }[];
+    private counters: THREE.Mesh[];
+
 
     private colorMesh(mesh, solution):void {
         for (var s = 0; s < solution.length; s++)
@@ -133,6 +135,37 @@ class PuzzleScene {
         this.colorMesh(mesh, solution);
     }
 
+    private addText(meshIndex: number): void {
+        // create a canvas element
+        var canvas1 = document.createElement('canvas');
+        canvas1.height = 200;
+        canvas1.width = 400;
+
+        var context1 = canvas1.getContext('2d');
+        context1.font = "Bold 40px Arial";
+        context1.fillStyle = "rgba(255,255,255,0.95)";
+        var textOffset = 0.05;
+        context1.fillText('Hello!', (0.5 + textOffset) * canvas1.width, (0.5 - textOffset) * canvas1.height);
+        
+        // canvas contents will be used for a texture
+        var texture1 = new THREE.Texture(canvas1) 
+        texture1.needsUpdate = true;
+          
+        var material1 = new THREE.MeshBasicMaterial( {map: texture1, side:THREE.DoubleSide } );
+        material1.transparent = true;
+
+        var planeGeometry = new THREE.PlaneGeometry(2, 2);
+
+        var mesh1 = new THREE.Mesh(
+            planeGeometry,
+            material1
+          );
+        mesh1.position.set(0,0,0);
+        
+        this.scene.add(mesh1);
+        this.counters[meshIndex] = mesh1;
+    }
+
     public initializeScene(data) {
 
         this.solutions = data.solutions
@@ -140,6 +173,8 @@ class PuzzleScene {
         this.meshes = [];
         this.meshes[0] = {};
         this.meshes[1] = {};
+
+        this.counters = [];
 
         if (Detector.webgl) {
             this.renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -176,6 +211,8 @@ class PuzzleScene {
 
         this.backSolutionIndex = 1;
         this.backMeshIndex = 1;
+
+        this.addText(0);
 
     }
 
