@@ -117,11 +117,7 @@ class PuzzleScene {
                 squareGeometry.vertices.push(new THREE.Vector3(1.0 - border, 0.0 + border, 0.0));
                 squareGeometry.vertices.push(new THREE.Vector3(1.0 - border, 1.0 - border, 0.0));
                 squareGeometry.vertices.push(new THREE.Vector3(0.0 + border, 1.0 - border, 0.0));
-                if (meshIndex == 0) {
-                    squareGeometry.faces.push(new THREE.Face4(0, 1, 2, 3));
-                } else {
-                    squareGeometry.faces.push(new THREE.Face4(3, 2, 1, 0));
-                }
+                squareGeometry.faces.push(new THREE.Face4(0, 1, 2, 3));
 
                 // Create a mesh and insert the geometry and the material. 
                 var squareMesh = new THREE.Mesh(squareGeometry);
@@ -151,7 +147,7 @@ class PuzzleScene {
         var texture1 = new THREE.Texture(canvas1) 
         texture1.needsUpdate = true;
 
-        var material1 = new THREE.MeshBasicMaterial( {map: texture1, side: (meshIndex == 0) ? THREE.FrontSide : THREE.BackSide } );
+        var material1 = new THREE.MeshBasicMaterial( {map: texture1, side: THREE.FrontSide } );
 
         material1.transparent = true;
 
@@ -163,7 +159,6 @@ class PuzzleScene {
           );
         mesh1.matrixAutoUpdate = false;
 
-        
         this.scene.add(mesh1);
         var mesh = this.meshes[meshIndex];
         mesh[this.counterKey] = mesh1;
@@ -240,12 +235,10 @@ class PuzzleScene {
         var rotationAxis = new THREE.Vector3(1.0, 1.0, 0.0);
         rotationAxis.normalize();
         var rotationMatrix: THREE.Matrix4 = new THREE.Matrix4;
-        rotationMatrix.makeRotationAxis(rotationAxis, position.rotation / 180.0 * Math.PI);
 
-        for (var meshkey in this.meshes) {
-            if (!this.meshes.hasOwnProperty(meshkey)) 
-                continue;
-            var mesh = this.meshes[meshkey];
+        for (var meshindex:number = 0; meshindex < 2; meshindex++) {
+            rotationMatrix.makeRotationAxis(rotationAxis, (meshindex+position.rotation / 180.0) * Math.PI);
+            var mesh = this.meshes[meshindex];
             for (var squarekey in mesh) {
                 if (!mesh.hasOwnProperty(squarekey)) 
                     continue;
