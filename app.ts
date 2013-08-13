@@ -84,7 +84,7 @@ class PuzzleScene {
     private solutions;
 
     private meshes: { [element: string]: THREE.Mesh; }[];
-    private counters: THREE.Mesh[];
+    private counterKey: string = "counter";
 
 
     private colorMesh(mesh, solution):void {
@@ -150,8 +150,9 @@ class PuzzleScene {
         // canvas contents will be used for a texture
         var texture1 = new THREE.Texture(canvas1) 
         texture1.needsUpdate = true;
-          
-        var material1 = new THREE.MeshBasicMaterial( {map: texture1, side:THREE.DoubleSide } );
+
+        var material1 = new THREE.MeshBasicMaterial( {map: texture1, side: (meshIndex == 0) ? THREE.FrontSide : THREE.BackSide } );
+
         material1.transparent = true;
 
         var planeGeometry = new THREE.PlaneGeometry(2, 2);
@@ -160,10 +161,12 @@ class PuzzleScene {
             planeGeometry,
             material1
           );
-        mesh1.position.set(0,0,0);
+        mesh1.matrixAutoUpdate = false;
+
         
         this.scene.add(mesh1);
-        this.counters[meshIndex] = mesh1;
+        var mesh = this.meshes[meshIndex];
+        mesh[this.counterKey] = mesh1;
     }
 
     public initializeScene(data) {
@@ -173,8 +176,6 @@ class PuzzleScene {
         this.meshes = [];
         this.meshes[0] = {};
         this.meshes[1] = {};
-
-        this.counters = [];
 
         if (Detector.webgl) {
             this.renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -213,7 +214,26 @@ class PuzzleScene {
         this.backMeshIndex = 1;
 
         this.addText(0);
+        this.addText(1);
 
+    }
+
+    private getPosition(id: string): THREE.Vector3 {
+        var x: number;
+        var y: number;
+        var z: number;
+        
+        if (id == this.counterKey) {
+            x = 0;
+            y = 0;
+            z = 0.01;
+        } else {
+            var coord_strings = id.split(",");
+            x = parseInt(coord_strings[0]);
+            y = parseInt(coord_strings[1]);
+            z = 0.0;
+        }
+        return new THREE.Vector3(x - 5, y - 3, z);
     }
 
     public update(): void {
@@ -221,18 +241,22 @@ class PuzzleScene {
         rotationAxis.normalize();
         var rotationMatrix: THREE.Matrix4 = new THREE.Matrix4;
         rotationMatrix.makeRotationAxis(rotationAxis, position.rotation / 180.0 * Math.PI);
-        $.each(this.meshes, function (key, mesh) {
-            $.each(mesh, function (key, square) {
-                var coord_strings = key.split(",");
-                var x = parseInt(coord_strings[0]);
-                var y = parseInt(coord_strings[1]);
-                var position = new THREE.Vector3(x - 5, y - 3, 0.0);
+
+        for (var meshkey in this.meshes) {
+            if (!this.meshes.hasOwnProperty(meshkey)) 
+                continue;
+            var mesh = this.meshes[meshkey];
+            for (var squarekey in mesh) {
+                if (!mesh.hasOwnProperty(squarekey)) 
+                    continue;
+                var square = mesh[squarekey];
+                var pos = this.getPosition(squarekey);
 
                 square.matrix.copy(rotationMatrix);
-                square.matrix.setPosition(position);
+                square.matrix.setPosition(pos);
                 square.updateMatrixWorld(true);  // why is this necessary?
-            });
-        });
+            }
+        }
     }
 
     public loadNextSolution(): void {
