@@ -87,7 +87,7 @@ class PuzzleScene {
     private counterKey: string = "counter";
 
 
-    private colorMesh(mesh, solution):void {
+    private updateColor(mesh, solution):void {
         for (var s = 0; s < solution.length; s++)
         {
             var row = solution[s];
@@ -98,6 +98,31 @@ class PuzzleScene {
                 material.color.set(useColor);
             }
         }
+    }
+
+    private updateText(mesh, text:string):void {
+
+        var canvas = document.createElement('canvas');
+        canvas.height = 200;
+        canvas.width = 400;
+
+        var context = canvas.getContext('2d');
+        context.font = "Bold 40px Arial";
+        context.fillStyle = "rgba(255,255,255,0.95)";
+        var textOffset = 0.05;
+        context.fillText(text, (0.5 + textOffset) * canvas.width, (0.5 - textOffset) * canvas.height);
+        
+        // canvas contents will be used for a texture
+        var texture = new THREE.Texture(canvas) 
+        texture.needsUpdate = true;
+
+        var material = new THREE.MeshBasicMaterial( {map: texture, side: THREE.FrontSide } );
+        material.transparent = true;
+
+        var textMesh = mesh[this.counterKey];
+        textMesh.material = material;
+
+
     }
 
     private initSolutionMeshes(solution, meshIndex: number): void {
@@ -128,7 +153,7 @@ class PuzzleScene {
                 this.scene.add(squareMesh);
             }
         }
-        this.colorMesh(mesh, solution);
+        this.updateColor(mesh, solution);
     }
 
     private addText(mesh, text:string): void {
@@ -257,7 +282,8 @@ class PuzzleScene {
 
         var mesh = this.meshes[this.backMeshIndex];
         var solution = this.solutions[this.backSolutionIndex];
-        this.colorMesh(mesh, solution);
+        this.updateColor(mesh, solution);
+        this.updateText(mesh, ''+this.backSolutionIndex);
     }
 
     public renderScene():void {
