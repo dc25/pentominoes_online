@@ -131,37 +131,36 @@ class PuzzleScene {
         this.colorMesh(mesh, solution);
     }
 
-    private addText(meshIndex: number): void {
+    private addText(mesh, text:string): void {
         // create a canvas element
-        var canvas1 = document.createElement('canvas');
-        canvas1.height = 200;
-        canvas1.width = 400;
+        var canvas = document.createElement('canvas');
+        canvas.height = 200;
+        canvas.width = 400;
 
-        var context1 = canvas1.getContext('2d');
-        context1.font = "Bold 40px Arial";
-        context1.fillStyle = "rgba(255,255,255,0.95)";
+        var context = canvas.getContext('2d');
+        context.font = "Bold 40px Arial";
+        context.fillStyle = "rgba(255,255,255,0.95)";
         var textOffset = 0.05;
-        context1.fillText('Hello!', (0.5 + textOffset) * canvas1.width, (0.5 - textOffset) * canvas1.height);
+        context.fillText(text, (0.5 + textOffset) * canvas.width, (0.5 - textOffset) * canvas.height);
         
         // canvas contents will be used for a texture
-        var texture1 = new THREE.Texture(canvas1) 
-        texture1.needsUpdate = true;
+        var texture = new THREE.Texture(canvas) 
+        texture.needsUpdate = true;
 
-        var material1 = new THREE.MeshBasicMaterial( {map: texture1, side: THREE.FrontSide } );
+        var material = new THREE.MeshBasicMaterial( {map: texture, side: THREE.FrontSide } );
 
-        material1.transparent = true;
+        material.transparent = true;
 
         var planeGeometry = new THREE.PlaneGeometry(2, 2);
 
-        var mesh1 = new THREE.Mesh(
+        var textMesh = new THREE.Mesh(
             planeGeometry,
-            material1
+            material
           );
-        mesh1.matrixAutoUpdate = false;
+        textMesh.matrixAutoUpdate = false;
 
-        this.scene.add(mesh1);
-        var mesh = this.meshes[meshIndex];
-        mesh[this.counterKey] = mesh1;
+        this.scene.add(textMesh);
+        mesh[this.counterKey] = textMesh;
     }
 
     public initializeScene(data) {
@@ -208,8 +207,8 @@ class PuzzleScene {
         this.backSolutionIndex = 1;
         this.backMeshIndex = 1;
 
-        this.addText(0);
-        this.addText(1);
+        this.addText(this.meshes[0], ''+0);
+        this.addText(this.meshes[1], ''+1);
 
     }
 
