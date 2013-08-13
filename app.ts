@@ -103,8 +103,8 @@ class PuzzleScene {
     private updateText(mesh, text:string):void {
 
         var canvas = document.createElement('canvas');
-        canvas.height = 200;
-        canvas.width = 400;
+        canvas.height = 300;
+        canvas.width = 600;
 
         var context = canvas.getContext('2d');
         context.font = "Bold 40px Arial";
@@ -121,8 +121,6 @@ class PuzzleScene {
 
         var textMesh = mesh[this.counterKey];
         textMesh.material = material;
-
-
     }
 
     private initSolutionMeshes(solution, meshIndex: number): void {
@@ -157,35 +155,15 @@ class PuzzleScene {
     }
 
     private addText(mesh, text:string): void {
-        // create a canvas element
-        var canvas = document.createElement('canvas');
-        canvas.height = 200;
-        canvas.width = 400;
-
-        var context = canvas.getContext('2d');
-        context.font = "Bold 40px Arial";
-        context.fillStyle = "rgba(255,255,255,0.95)";
-        var textOffset = 0.05;
-        context.fillText(text, (0.5 + textOffset) * canvas.width, (0.5 - textOffset) * canvas.height);
-        
-        // canvas contents will be used for a texture
-        var texture = new THREE.Texture(canvas) 
-        texture.needsUpdate = true;
-
-        var material = new THREE.MeshBasicMaterial( {map: texture, side: THREE.FrontSide } );
-
-        material.transparent = true;
 
         var planeGeometry = new THREE.PlaneGeometry(2, 2);
 
-        var textMesh = new THREE.Mesh(
-            planeGeometry,
-            material
-          );
+        var textMesh = new THREE.Mesh(planeGeometry);
         textMesh.matrixAutoUpdate = false;
 
         this.scene.add(textMesh);
         mesh[this.counterKey] = textMesh;
+        this.updateText(mesh, text);
     }
 
     public initializeScene(data) {
@@ -232,8 +210,8 @@ class PuzzleScene {
         this.backSolutionIndex = 1;
         this.backMeshIndex = 1;
 
-        this.addText(this.meshes[0], ''+0);
-        this.addText(this.meshes[1], ''+1);
+        this.addText(this.meshes[0], '' + 1 + ' / ' + this.solutions.length);
+        this.addText(this.meshes[1], '' + 2 + ' / ' + this.solutions.length);
 
     }
 
@@ -283,7 +261,7 @@ class PuzzleScene {
         var mesh = this.meshes[this.backMeshIndex];
         var solution = this.solutions[this.backSolutionIndex];
         this.updateColor(mesh, solution);
-        this.updateText(mesh, ''+this.backSolutionIndex);
+        this.updateText(mesh, '' + (this.backSolutionIndex+1) + ' / ' + this.solutions.length);
     }
 
     public renderScene():void {
@@ -302,4 +280,3 @@ function showSolutions() {
 }
 
 $(document).ready(showSolutions)
-
