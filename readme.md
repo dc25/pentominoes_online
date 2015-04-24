@@ -1,6 +1,6 @@
-# Pentominos 6x10 Rectangle Solution Animation
+# Pentominoes 6x10 Rectangle Solution Animation
 
-A typescript program to read and display all solutions to the pentominos 6x10 rectangle puzzle in chronological seqence.
+A typescript program to read and display all solutions to the pentominoes 6x10 rectangle puzzle in chronological seqence.
 
 ## Required Tools
 
@@ -20,7 +20,7 @@ Load the solution file into visual studio express edition.  Ctrl+Shift+b to buil
 
 ## Usage
 
-Visit the gh-pages website : [Pentominos][]
+Visit the gh-pages website : [Pentominoes][]
 
-[Pentominos]: http://dc25.github.io/pentominos_online      "Pentominos 6x10 Animated Solutions"
+[Pentominoes]: http://dc25.github.io/pentominoes_online      "Pentominoes 6x10 Animated Solutions"
 
